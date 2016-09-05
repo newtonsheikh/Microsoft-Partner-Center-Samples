@@ -1,0 +1,16 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="row">
+    <div id="customers"></div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $.get('/ListCustomers', function (data) {
+            $('#customers').html(data);
+            $('#customers').fadeIn('fast');
+        });
+    </script>
+}

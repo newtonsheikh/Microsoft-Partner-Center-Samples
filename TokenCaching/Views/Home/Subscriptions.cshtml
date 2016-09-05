@@ -1,0 +1,18 @@
+﻿@model PartnerCenter.Samples.TokenCaching.Models.SubscriptionsModel
+
+@{
+    ViewBag.Title = "Subscriptions";
+}
+
+<h2>Subscriptions</h2>
+
+<div id="subscriptions"></div>
+
+@section Scripts {
+    <script type="text/javascript">
+        $.get('/ListSubscriptions/@Model.CustomerId', function (data) {
+            $('#subscriptions').html(data);
+            $('#subscriptions').fadeIn('fast');
+        });
+    </script>
+}
