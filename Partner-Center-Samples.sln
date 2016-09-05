@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.25618.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6700047F-C8BA-4333-BA21-B4FD969CE144}"
 	ProjectSection(SolutionItems) = preProject
@@ -30,7 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Reports", "Reports", "{A742
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppPlusUser-Auth", "Source\AppPlusUser-Auth\AppPlusUser-Auth.csproj", "{C5F830FF-AF11-4868-B09B-BEC23E52A35E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TokenCaching", "TokenCaching\TokenCaching.csproj", "{9D45349C-C04D-4415-B699-97E91E31B05A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TokenCaching", "Source\TokenCaching\TokenCaching.csproj", "{9D45349C-C04D-4415-B699-97E91E31B05A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
