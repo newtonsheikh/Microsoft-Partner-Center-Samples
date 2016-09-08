@@ -25,7 +25,7 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 
-namespace PartnerCenter.Samples.TokenCaching.Cache
+namespace PartnerCenter.Samples.AOBO.Cache
 {
     /// <summary>
     /// Custom implementation of the <see cref="TokenCache"/> class.
@@ -95,7 +95,7 @@ namespace PartnerCenter.Samples.TokenCaching.Cache
         }
 
         /// <summary>
-        /// Delete an item from the cache.
+        /// Deletes an item from the cache.
         /// </summary>
         /// <param name="item">The item to delete from the cache.</param>
         public override void DeleteItem(TokenCacheItem item)

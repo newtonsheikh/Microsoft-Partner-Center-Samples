@@ -1,0 +1,415 @@
+﻿/*
+ * Microsoft Partner Center - Admin on Behalf of (AOBO) Sample
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Microsoft.Store.PartnerCenter;
+using Microsoft.Store.PartnerCenter.Extensions;
+using Newtonsoft.Json;
+using PartnerCenter.Samples.AOBO.Cache;
+using PartnerCenter.Samples.AOBO.Models;
+using System;
+using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
+
+namespace PartnerCenter.Samples.AOBO.Context
+{
+    /// <summary>
+    /// Helper class for retrieving access tokens.
+    /// </summary>
+    public class TokenContext
+    {
+        /// <summary>
+        /// Gets an access token from the authority.
+        /// </summary>
+        /// <param name="authority">Address of the authority to issue the token.</param>
+        /// <param name="resource">Identifier of the target resource that is the recipent of the requested token.</param>
+        /// <returns>An instnace of <see cref="AuthenticationResult"/> that represented the access token.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// authority
+        /// or
+        /// resource
+        /// </exception>
+        public AuthenticationResult GetAppOnlyToken(string authority, string resource)
+        {
+            if (string.IsNullOrEmpty(authority))
+            {
+                throw new ArgumentNullException(nameof(authority));
+            }
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentNullException(nameof(resource));
+            }
+
+            return SynchronousExecute(() => GetAppOnlyTokenAsync(authority, resource));
+        }
+
+        /// <summary>
+        /// Gets an access token from the authority.
+        /// </summary>
+        /// <param name="authority">Address of the authority to issue the token.</param>
+        /// <param name="resource">Identifier of the target resource that is the recipent of the requested token.</param>
+        /// <returns>An instnace of <see cref="AuthenticationResult"/> that represented the access token.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// authority
+        /// or
+        /// resource
+        /// </exception>
+        public async Task<AuthenticationResult> GetAppOnlyTokenAsync(string authority, string resource)
+        {
+            AuthenticationContext authContext;
+            DistributedTokenCache tokenCache;
+
+            if (string.IsNullOrEmpty(authority))
+            {
+                throw new ArgumentNullException(nameof(authority));
+            }
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentNullException(nameof(resource));
+            }
+
+            try
+            {
+                // If the Redis Cache connection string is not populated then utilize the constructor
+                // that only requires the authority. That constructor will utilize a in-memory caching
+                // feature that is built-in into ADAL.
+                if (string.IsNullOrEmpty(Settings.RedisConnection))
+                {
+                    authContext = new AuthenticationContext(authority);
+                }
+                else
+                {
+                    tokenCache = new DistributedTokenCache(resource);
+                    authContext = new AuthenticationContext(authority, tokenCache);
+                }
+
+                return await authContext.AcquireTokenAsync(
+                    resource,
+                    new ClientCredential(
+                        Settings.ApplicationId,
+                        Settings.ApplicationSecret));
+            }
+            finally
+            {
+                authContext = null;
+                tokenCache = null;
+            }
+        }
+
+        /// <summary>
+        /// Gets an access token from the authority.
+        /// </summary>
+        /// <param name="authority">Address of the authority to issue the token.</param>
+        /// <param name="resource">Identifier of the target resource that is the recipent of the requested token.</param>
+        /// <param name="thumbprint">Thumbprint for the certificate to be used for authentication.</param>
+        /// <returns>An instance of <see cref="AuthenticationResult"/> that represents the access token.</returns>
+        /// <remarks>
+        /// See https://github.com/Azure/azure-content/blob/master/articles/key-vault/key-vault-use-from-web-application.md
+        /// for additional details regarding using this approach for obtaining an access token.
+        /// </remarks>
+        public AuthenticationResult GetAppOnlyToken(string authority, string resource, string thumbprint)
+        {
+            if (string.IsNullOrEmpty(authority))
+            {
+                throw new ArgumentNullException(nameof(authority));
+            }
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentNullException(nameof(resource));
+            }
+            if (string.IsNullOrEmpty(thumbprint))
+            {
+                throw new ArgumentNullException(thumbprint);
+            }
+
+            return SynchronousExecute(() => GetAppOnlyTokenAsync(authority, resource, thumbprint));
+        }
+
+        /// <summary>
+        /// Gets an access token from the authority.
+        /// </summary>
+        /// <param name="authority">Address of the authority to issue the token.</param>
+        /// <param name="resource">Identifier of the target resource that is the recipent of the requested token.</param>
+        /// <param name="thumbprint">Thumbprint for the certificate to be used for authentication.</param>
+        /// <returns>An instance of <see cref="AuthenticationResult"/> that represents the access token.</returns>
+        /// <remarks>
+        /// See https://github.com/Azure/azure-content/blob/master/articles/key-vault/key-vault-use-from-web-application.md
+        /// for additional details regarding using this approach for obtaining an access token.
+        /// </remarks>
+        public async Task<AuthenticationResult> GetAppOnlyTokenAsync(string authority, string resource, string thumbprint)
+        {
+            AuthenticationContext authContext;
+            DistributedTokenCache tokenCache;
+
+            if (string.IsNullOrEmpty(authority))
+            {
+                throw new ArgumentNullException(nameof(authority));
+            }
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentNullException(nameof(resource));
+            }
+            if (string.IsNullOrEmpty(thumbprint))
+            {
+                throw new ArgumentNullException(thumbprint);
+            }
+
+            try
+            {
+                // If the Redis Cache connection string is not populated then utilize the constructor
+                // that only requires the authority. That constructor will utilize a in-memory caching
+                // feature that is built-in into ADAL.
+                if (string.IsNullOrEmpty(Settings.RedisConnection))
+                {
+                    authContext = new AuthenticationContext(authority);
+                }
+                else
+                {
+                    tokenCache = new DistributedTokenCache(resource);
+                    authContext = new AuthenticationContext(authority, tokenCache);
+                }
+
+                return await authContext.AcquireTokenAsync(
+                    resource,
+                    new ClientAssertionCertificate(
+                        Settings.ApplicationId,
+                        FindCertificateByThumbprint(thumbprint)));
+            }
+            finally
+            {
+                authContext = null;
+                tokenCache = null;
+            }
+        }
+
+        /// <summary>
+        /// Gets an access token from the authority.
+        /// </summary>
+        /// <param name="authority">Address of the authority to issue the token.</param>
+        /// <param name="resource">Identifier of the target resource that is the recipent of the requested token.</param>
+        /// <returns>An instnace of <see cref="AuthenticationResult"/> that represented the access token.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// authority
+        /// or
+        /// resource
+        /// </exception>
+        public AuthenticationResult GetAppPlusUserToken(string authority, string resource)
+        {
+            if (string.IsNullOrEmpty(authority))
+            {
+                throw new ArgumentNullException(nameof(authority));
+            }
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentNullException(nameof(resource));
+            }
+
+            return SynchronousExecute(() => GetAppPlusUserTokenAsync(authority, resource));
+        }
+
+        /// <summary>
+        /// Gets an access token from the authority.
+        /// </summary>
+        /// <param name="authority">Address of the authority to issue the token.</param>
+        /// <param name="resource">Identifier of the target resource that is the recipent of the requested token.</param>
+        /// <returns>An instnace of <see cref="AuthenticationResult"/> that represented the access token.</returns>
+        /// <exception cref="ArgumentNullException">
+        /// authority
+        /// or
+        /// resource
+        /// </exception>
+        public async Task<AuthenticationResult> GetAppPlusUserTokenAsync(string authority, string resource)
+        {
+            AuthenticationContext authContext;
+            DistributedTokenCache tokenCache;
+
+            if (string.IsNullOrEmpty(authority))
+            {
+                throw new ArgumentNullException(nameof(authority));
+            }
+            if (string.IsNullOrEmpty(resource))
+            {
+                throw new ArgumentNullException(nameof(resource));
+            }
+
+            try
+            {
+                // If the Redis Cache connection string is not populated then utilize the constructor
+                // that only requires the authority. That constructor will utilize a in-memory caching
+                // feature that is built-in into ADAL.
+                if (string.IsNullOrEmpty(Settings.RedisConnection))
+                {
+                    authContext = new AuthenticationContext(authority);
+                }
+                else
+                {
+                    tokenCache = new DistributedTokenCache(resource);
+                    authContext = new AuthenticationContext(authority, tokenCache);
+                }
+
+                return await authContext.AcquireTokenAsync(
+                    resource,
+                    new ClientCredential(
+                        Settings.ApplicationId,
+                        Settings.ApplicationSecret),
+                    new UserAssertion(UserAssertionToken, "urn:ietf:params:oauth:grant-type:jwt-bearer"));
+            }
+            finally
+            {
+                authContext = null;
+                tokenCache = null;
+            }
+        }
+
+        /// <summary>
+        /// Get an access token for the Partner Center API.
+        /// </summary>
+        /// <param name="authority">Address of the authority to issue the token.</param>
+        /// <returns>
+        /// An instance of <see cref="IPartnerCredentials" /> that represents the access token.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// authority
+        /// </exception>
+        public async Task<IPartnerCredentials> GetPartnerCenterTokenAsync(string authority)
+        {
+            AuthenticationResult authResult;
+            IPartnerCredentials credentials;
+
+            if (string.IsNullOrEmpty(authority))
+            {
+                throw new ArgumentNullException(nameof(authority));
+            }
+
+            try
+            {
+                if (CacheManager.Instance.Exists(Key))
+                {
+                    credentials = JsonConvert.DeserializeObject<PartnerCenterTokenModel>(
+                        CacheManager.Instance.Read(Key));
+
+                    if (!credentials.IsExpired())
+                    {
+                        return credentials;
+                    }
+                }
+
+                authResult = await GetAppPlusUserTokenAsync(
+                    authority,
+                    "https://api.partnercenter.microsoft.com");
+
+                credentials = await PartnerCredentials.Instance.GenerateByUserCredentialsAsync(
+                    Settings.ApplicationId,
+                    new AuthenticationToken(authResult.AccessToken, authResult.ExpiresOn));
+
+                CacheManager.Instance.Write(Key, JsonConvert.SerializeObject(credentials));
+
+                return credentials;
+            }
+            finally
+            {
+                authResult = null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the user assertion token.
+        /// </summary>
+        /// <value>
+        /// The user assertion token for the authentication user.
+        /// </value>
+        /// <remarks>
+        /// This token was obtained when the user logged into the site.
+        /// </remarks>
+        private static string UserAssertionToken
+        {
+            get
+            {
+                System.IdentityModel.Tokens.BootstrapContext bootstrapContext;
+
+                try
+                {
+                    bootstrapContext = ClaimsPrincipal.Current.Identities.First().BootstrapContext as System.IdentityModel.Tokens.BootstrapContext;
+
+                    return bootstrapContext?.Token;
+                }
+                finally
+                {
+                    bootstrapContext = null;
+                }
+            }
+        }
+
+        private static string Key =>
+           $"Resource:PartnerCenterAPI::UserId:{ClaimsPrincipal.Current.Identities.First().FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value}";
+
+        /// <summary>
+        /// Synchronously executes an asynchronous function.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="operation">The operation.</param>
+        /// <returns></returns>
+        private static T SynchronousExecute<T>(Func<Task<T>> operation)
+        {
+            try
+            {
+                return Task.Run(async () => await operation()).Result;
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.InnerException;
+            }
+        }
+
+        private static X509Certificate2 FindCertificateByThumbprint(string value)
+        {
+            X509Certificate2Collection collection;
+            X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
+
+            try
+            {
+                store.Open(OpenFlags.ReadOnly);
+                // Certificates are not validated with this call. If that is a requirement
+                // for your solution then change false to true in the store.Certificates.Find call. 
+                collection = store.Certificates.Find(
+                    X509FindType.FindByThumbprint,
+                    value,
+                    false);
+
+                if (collection == null || collection.Count == 0)
+                {
+                    return null;
+                }
+
+                return collection[0];
+            }
+            finally
+            {
+                store.Close();
+                collection = null;
+            }
+        }
+
+    }
+}

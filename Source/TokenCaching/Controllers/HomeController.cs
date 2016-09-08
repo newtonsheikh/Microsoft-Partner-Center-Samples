@@ -66,6 +66,7 @@ namespace PartnerCenter.Samples.TokenCaching.Controllers
                 operations = null;
             }
         }
+
         [Route("Subscriptions/{customerId}")]
         public ViewResult Subscriptions(string customerId)
         {

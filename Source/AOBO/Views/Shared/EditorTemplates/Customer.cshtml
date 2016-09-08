@@ -1,0 +1,13 @@
+﻿@model Microsoft.Store.PartnerCenter.Models.Customers.Customer
+
+<tr id="@Model.Id">
+    <td>
+        <a href="/Subscriptions/@Model.Id">@Html.DisplayFor(item => item.CompanyProfile.CompanyName)</a>
+    </td>
+    <td>
+        @Html.DisplayFor(item => item.CompanyProfile.Domain)
+    </td>
+    <td>
+        @Html.DisplayFor(item => item.RelationshipToPartner)
+    </td>
+</tr>

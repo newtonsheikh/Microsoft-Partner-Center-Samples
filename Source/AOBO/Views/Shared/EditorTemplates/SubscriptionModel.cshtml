@@ -1,0 +1,20 @@
+﻿@model PartnerCenter.Samples.AOBO.Models.SubscriptionModel
+
+<tr>
+    <td>
+        @Html.DisplayFor(item => item.FriendlyName)
+    </td>
+
+    <td>
+        @Html.DisplayFor(item => item.Id)
+    </td>
+    <td>
+        @Html.DisplayFor(item => item.Status)
+    </td>
+    @if (Model.FriendlyName.Contains("Office"))
+    {
+        <td>
+            <a href="/Users/@Model.CustomerId">View Users</a>
+        </td>
+    }
+</tr>

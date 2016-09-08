@@ -1,0 +1,13 @@
+﻿@model PartnerCenter.Samples.AOBO.Models.UserModel
+
+<tr id="@Model.ObjectId">
+    <td>
+        @Html.DisplayFor(item => item.UserPrincipalName)
+    </td>
+    <td>
+        @Html.DisplayFor(item => item.Mail)
+    </td>
+    <td>
+        <a href="/InstallApp/@Model.CustomerId/@Model.ObjectId">Install HelloWorld Add-in</a>
+    </td>
+</tr>
